@@ -1,0 +1,41 @@
+CHIP RAM512
+{
+    
+    IN in[16], addr[9], load;
+
+  
+    OUT out[16];
+    
+	// Ovdje se koristi horizontalno skaliranje: 8 RAM64 čipova se koristi za stvaranje RAM512
+	// RAM64 je sam po sebi memorijski čip koji može pohraniti 64 riječi podataka od 16 bitova svaka. Kombinirajući 8 ovakvih
+    // čipova, možemo postići memoriju koja može pohraniti 512 riječi podataka od 16 bitova, što je potrebno za RAM512.
+	
+	
+    PARTS:
+
+    // DMux8Way dijeli kontrolni signal (load) na osam linija na temelju selektora (addr[6..8])
+	
+    DMux8Way(in = load, sel = addr[6..8], a = load0, b = load1, c = load2, d = load3, e = load4, f = load5, g = load6, h = load7);
+	
+	//Korištenjem 3 bita (addr[6..8]) određujemo koji od 8 RAM64 čipova će biti korišten za upis ili čitanje podataka
+    
+    // Svaka RAM64 memorija koristi odgovarajući signal za upis (load0 do load7) i adresu (addr[0..5])
+	
+    // Preostalih 6 bitova (addr[0..5]) koristi se za adresiranje unutar odabranog RAM64 čipa, što omogućuje pristup 64 lokacije
+	// za pohranu podataka unutar svakog od 8 odabranih čipova
+	
+    RAM64(in=in, load=load0, address=addr[0..5], out=out0); 
+    RAM64(in=in, load=load1, address=addr[0..5], out=out1); 
+    RAM64(in=in, load=load2, address=addr[0..5], out=out2);
+    RAM64(in=in, load=load3, address=addr[0..5], out=out3);
+    RAM64(in=in, load=load4, address=addr[0..5], out=out4);
+    RAM64(in=in, load=load5, address=addr[0..5], out=out5);
+    RAM64(in=in, load=load6, address=addr[0..5], out=out6);
+    RAM64(in=in, load=load7, address=addr[0..5], out=out7);
+    
+    // Mux8Way16 kombinira izlazne signale osam RAM64 čipova na temelju selektora (addr[6..8]) i postavlja rezultirajući izlaz (out)
+	// Omogućuje odabir izlaza iz odabranog RAM64 čipa za čitanje podataka
+	
+    Mux8Way16(a=out0, b=out1, c=out2, d=out3, e=out4, f=out5, g=out6, h=out7, sel=addr[6..8], out=out);	
+}
+
